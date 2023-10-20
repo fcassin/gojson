@@ -1,3 +1,3 @@
-module github.com/fcassin/gojson
+module gojson
 
 go 1.18
