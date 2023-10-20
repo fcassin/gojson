@@ -1,4 +1,4 @@
-package gojson
+package json
 
 import (
 	"bytes"
@@ -9,10 +9,10 @@ import (
 	"unicode/utf8"
 )
 
-type TokenKind int
+type tokenKind int
 
 const (
-	ObjectOpen TokenKind = iota
+	ObjectOpen tokenKind = iota
 	ObjectClose
 	ArrayOpen
 	ArrayClose
@@ -26,8 +26,8 @@ const (
 	Unknown
 )
 
-type Token struct {
-	kind  TokenKind
+type token struct {
+	kind  tokenKind
 	token string
 }
 
@@ -37,13 +37,13 @@ type lexer struct {
 	token  rune
 }
 
-func NewLexer(rawBytes []byte) lexer {
+func newLexer(rawBytes []byte) lexer {
 	return lexer{
 		reader: bytes.NewReader(rawBytes),
 	}
 }
 
-func (l *lexer) nextString() (t Token, e error) {
+func (l *lexer) nextString() (t token, e error) {
 	var r rune
 	var value string
 	for {
@@ -54,14 +54,14 @@ func (l *lexer) nextString() (t Token, e error) {
 		}
 
 		if r == '"' {
-			return Token{String, value}, nil
+			return token{String, value}, nil
 		}
 
 		value = value + string(r)
 	}
 }
 
-func (l *lexer) nextNumber() (t Token, e error) {
+func (l *lexer) nextNumber() (t token, e error) {
 	var r rune
 	var s int
 	var value string
@@ -74,18 +74,18 @@ func (l *lexer) nextNumber() (t Token, e error) {
 		}
 
 		if isWhitespace(r) {
-			return Token{Number, value}, nil
+			return token{Number, value}, nil
 		}
 
 		if r == ',' {
 			l.reader.UnreadRune()
-			return Token{Number, value}, nil
+			return token{Number, value}, nil
 		}
 
 		runeBytes := make([]byte, s)
 		utf8.EncodeRune(runeBytes, r)
 
-		if NumberPattern.Match(runeBytes) {
+		if numberPattern.Match(runeBytes) {
 			value = value + string(r)
 		} else {
 			return t, errors.New(fmt.Sprintf("unexpected rune while reading number: %c", r))
@@ -93,7 +93,7 @@ func (l *lexer) nextNumber() (t Token, e error) {
 	}
 }
 
-func (l *lexer) next() (t Token, e error) {
+func (l *lexer) next() (t token, e error) {
 	var r rune
 	for {
 		r, _, e = l.reader.ReadRune()
@@ -110,13 +110,13 @@ func (l *lexer) next() (t Token, e error) {
 
 	switch r {
 	case '{':
-		return Token{ObjectOpen, "{"}, nil
+		return token{ObjectOpen, "{"}, nil
 	case '}':
-		return Token{ObjectClose, "}"}, nil
+		return token{ObjectClose, "}"}, nil
 	case '[':
-		return Token{ArrayOpen, "["}, nil
+		return token{ArrayOpen, "["}, nil
 	case ']':
-		return Token{ArrayClose, "]"}, nil
+		return token{ArrayClose, "]"}, nil
 	case '"':
 		return l.nextString()
 	case '-', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9':
@@ -124,11 +124,11 @@ func (l *lexer) next() (t Token, e error) {
 		return l.nextNumber()
 	// TODO(fca): Handle ':'
 	case ':':
-		return Token{Colon, ":"}, nil
+		return token{Colon, ":"}, nil
 	case ',':
-		return Token{Comma, ","}, nil
+		return token{Comma, ","}, nil
 	default:
-		return Token{Unknown, string(r)}, nil
+		return token{Unknown, string(r)}, nil
 	}
 }
 
@@ -141,7 +141,7 @@ func iterate(rawBytes []byte, element any) {
 		fmt.Println("cannot set element value!!!")
 	}
 
-	var jsonlexer lexer = NewLexer(rawBytes)
+	var jsonlexer lexer = newLexer(rawBytes)
 
 	for {
 		t, err := jsonlexer.next()

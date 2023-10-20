@@ -1,4 +1,4 @@
-package gojson
+package json
 
 import (
 	"fmt"
@@ -8,7 +8,7 @@ import (
 )
 
 func parseObject(l lexer, o reflect.Value) {
-	var state ParserState = SeekingName
+	var state parserState = seekingName
 	var name string
 
 	for {
@@ -19,20 +19,20 @@ func parseObject(l lexer, o reflect.Value) {
 		}
 
 		switch state {
-		case SeekingName:
+		case seekingName:
 			if token.kind != String {
 				fmt.Printf("expected to find a name! found %v\n", token)
 			} else {
 				name = token.token
-				state = SeekingNameValueSeparator
+				state = seekingNameValueSeparator
 			}
-		case SeekingNameValueSeparator:
+		case seekingNameValueSeparator:
 			if token.kind != Colon {
 				fmt.Println("expected to find a colon!")
 			} else {
-				state = SeekingValue
+				state = seekingValue
 			}
-		case SeekingValue:
+		case seekingValue:
 			// TODO: Handle all case
 			switch token.kind {
 			case ArrayOpen:
@@ -53,7 +53,7 @@ func parseObject(l lexer, o reflect.Value) {
 				parseArray(l, workingSlice)
 				o.FieldByIndex(structIndex).Set(workingSlice)
 
-				state = SeekingSeparator
+				state = seekingSeparator
 			case Number:
 				// TODO: Refactor into populate
 				var structIndex []int
@@ -74,21 +74,21 @@ func parseObject(l lexer, o reflect.Value) {
 
 				o.Elem().FieldByIndex(structIndex).Set(reflect.ValueOf(value))
 
-				state = SeekingSeparator
+				state = seekingSeparator
 			}
-		case SeekingSeparator:
+		case seekingSeparator:
 			switch token.kind {
 			case ObjectClose:
 				return
 			case Comma:
-				state = SeekingName
+				state = seekingName
 			}
 		}
 	}
 }
 
 func parseArray(l lexer, o reflect.Value) {
-	var state ParserState = SeekingElements
+	var state parserState = seekingElements
 
 	for {
 		token, err := l.next()
@@ -98,7 +98,7 @@ func parseArray(l lexer, o reflect.Value) {
 		}
 
 		switch state {
-		case SeekingElements:
+		case seekingElements:
 			switch token.kind {
 			case ObjectOpen:
 				workingElem := reflect.New(o.Type().Elem())
@@ -125,7 +125,7 @@ func Unmarshall(rawBytes []byte, element any) {
 		fmt.Println("cannot set root value!!!")
 	}
 
-	var jsonLexer lexer = NewLexer(rawBytes)
+	var jsonLexer lexer = newLexer(rawBytes)
 
 	for {
 		t, err := jsonLexer.next()

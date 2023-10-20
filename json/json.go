@@ -1,27 +1,27 @@
-package gojson
+package json
 
 import (
 	"fmt"
 	"regexp"
 )
 
-type ParserState int
+type parserState int
 
 const (
-	ReadingName ParserState = iota
-	ReadingNumber
-	SeekingBaseStructure
-	SeekingName
-	SeekingNameValueSeparator
-	SeekingValue
-	SeekingSeparator
+	readingName parserState = iota
+	readingNumber
+	seekingBaseStructure
+	seekingName
+	seekingNameValueSeparator
+	seekingValue
+	seekingSeparator
 	// object handling
-	SeekingMembers
+	seekingMembers
 	// TODO: Refactor, refactor, refactor
-	SeekingMember
+	seekingMember
 	// array handling
-	SeekingElements
-	SeekingElement
+	seekingElements
+	seekingElement
 )
 
 /* type JSONValue int
@@ -37,17 +37,17 @@ const (
 ) */
 
 const (
-	ZeroPattern     string = "0"
-	OneNinePattern  string = "[1-9]"
-	MinusPattern    string = "-"
-	SignPattern     string = "[+\\-]"
-	FractionPattern string = "\\."
-	ExponentPattern string = "[eE+\\-]"
+	zeroPattern     string = "0"
+	oneNinePattern  string = "[1-9]"
+	minusPattern    string = "-"
+	signPattern     string = "[+\\-]"
+	fractionPattern string = "\\."
+	exponentPattern string = "[eE+\\-]"
 )
 
 var (
-	IntegerPattern *regexp.Regexp = regexp.MustCompile(fmt.Sprintf("%s|%s|%s",
-		ZeroPattern, OneNinePattern, MinusPattern))
-	NumberPattern *regexp.Regexp = regexp.MustCompile(fmt.Sprintf("%s|%s|%s|%s|%s",
-		ZeroPattern, OneNinePattern, MinusPattern, FractionPattern, ExponentPattern))
+	integerPattern *regexp.Regexp = regexp.MustCompile(fmt.Sprintf("%s|%s|%s",
+		zeroPattern, oneNinePattern, minusPattern))
+	numberPattern *regexp.Regexp = regexp.MustCompile(fmt.Sprintf("%s|%s|%s|%s|%s",
+		zeroPattern, oneNinePattern, minusPattern, fractionPattern, exponentPattern))
 )
