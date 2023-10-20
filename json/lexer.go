@@ -12,18 +12,18 @@ import (
 type tokenKind int
 
 const (
-	ObjectOpen tokenKind = iota
-	ObjectClose
-	ArrayOpen
-	ArrayClose
+	objectOpen tokenKind = iota
+	objectClose
+	arrayOpen
+	arrayClose
 
-	String
-	Number
+	stringToken
+	number
 
-	Colon
-	Comma
+	colon
+	comma
 
-	Unknown
+	unknown
 )
 
 type token struct {
@@ -54,7 +54,7 @@ func (l *lexer) nextString() (t token, e error) {
 		}
 
 		if r == '"' {
-			return token{String, value}, nil
+			return token{stringToken, value}, nil
 		}
 
 		value = value + string(r)
@@ -74,12 +74,12 @@ func (l *lexer) nextNumber() (t token, e error) {
 		}
 
 		if isWhitespace(r) {
-			return token{Number, value}, nil
+			return token{number, value}, nil
 		}
 
 		if r == ',' {
 			l.reader.UnreadRune()
-			return token{Number, value}, nil
+			return token{number, value}, nil
 		}
 
 		runeBytes := make([]byte, s)
@@ -110,13 +110,13 @@ func (l *lexer) next() (t token, e error) {
 
 	switch r {
 	case '{':
-		return token{ObjectOpen, "{"}, nil
+		return token{objectOpen, "{"}, nil
 	case '}':
-		return token{ObjectClose, "}"}, nil
+		return token{objectClose, "}"}, nil
 	case '[':
-		return token{ArrayOpen, "["}, nil
+		return token{arrayOpen, "["}, nil
 	case ']':
-		return token{ArrayClose, "]"}, nil
+		return token{arrayClose, "]"}, nil
 	case '"':
 		return l.nextString()
 	case '-', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9':
@@ -124,11 +124,11 @@ func (l *lexer) next() (t token, e error) {
 		return l.nextNumber()
 	// TODO(fca): Handle ':'
 	case ':':
-		return token{Colon, ":"}, nil
+		return token{colon, ":"}, nil
 	case ',':
-		return token{Comma, ","}, nil
+		return token{comma, ","}, nil
 	default:
-		return token{Unknown, string(r)}, nil
+		return token{unknown, string(r)}, nil
 	}
 }
 
@@ -155,7 +155,7 @@ func iterate(rawBytes []byte, element any) {
 			break
 		}
 
-		if t.kind != Unknown {
+		if t.kind != unknown {
 			fmt.Println(t)
 		}
 	}

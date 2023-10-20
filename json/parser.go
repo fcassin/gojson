@@ -20,14 +20,14 @@ func parseObject(l lexer, o reflect.Value) {
 
 		switch state {
 		case seekingName:
-			if token.kind != String {
+			if token.kind != stringToken {
 				fmt.Printf("expected to find a name! found %v\n", token)
 			} else {
 				name = token.token
 				state = seekingNameValueSeparator
 			}
 		case seekingNameValueSeparator:
-			if token.kind != Colon {
+			if token.kind != colon {
 				fmt.Println("expected to find a colon!")
 			} else {
 				state = seekingValue
@@ -35,7 +35,7 @@ func parseObject(l lexer, o reflect.Value) {
 		case seekingValue:
 			// TODO: Handle all case
 			switch token.kind {
-			case ArrayOpen:
+			case arrayOpen:
 				var structIndex []int
 				var structField reflect.StructField
 
@@ -54,7 +54,7 @@ func parseObject(l lexer, o reflect.Value) {
 				o.FieldByIndex(structIndex).Set(workingSlice)
 
 				state = seekingSeparator
-			case Number:
+			case number:
 				// TODO: Refactor into populate
 				var structIndex []int
 
@@ -78,9 +78,9 @@ func parseObject(l lexer, o reflect.Value) {
 			}
 		case seekingSeparator:
 			switch token.kind {
-			case ObjectClose:
+			case objectClose:
 				return
-			case Comma:
+			case comma:
 				state = seekingName
 			}
 		}
@@ -100,13 +100,13 @@ func parseArray(l lexer, o reflect.Value) {
 		switch state {
 		case seekingElements:
 			switch token.kind {
-			case ObjectOpen:
+			case objectOpen:
 				workingElem := reflect.New(o.Type().Elem())
 				parseObject(l, workingElem)
 				o.Set(reflect.Append(o, workingElem.Elem()))
-			case ArrayClose:
+			case arrayClose:
 				return
-			case Comma:
+			case comma:
 				continue
 			default:
 				fmt.Printf("missing handling for %d\n", token.kind)
@@ -139,7 +139,7 @@ func Unmarshall(rawBytes []byte, element any) {
 			break
 		}
 
-		if t.kind == ObjectOpen {
+		if t.kind == objectOpen {
 			parseObject(jsonLexer, rootValue)
 		}
 	}
